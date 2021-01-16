@@ -9,6 +9,7 @@ const path = require('path');
 const fs = require('fs');
 
 // Functions
+const { notif_clip, notif_upload, notif_saved, customError } = require('./functions/notifications');
 const createFileName = require('./functions/createFileName');
 const template = require('./functions/template');
 
@@ -16,12 +17,6 @@ const template = require('./functions/template');
 let file = `${app.getPath('home')}/screenshot.png`;
 let settingsWin = null;
 let tray = null;
-
-// Load notifications
-const notif_clip = () => new Notification({ title: 'Screenshot Taken', body: 'Screenshot has been copied to your clipboard' }).show();
-const notif_upload = () => new Notification({ title: 'Screenshot Uploaded', body: 'Screenshot link has been copied to your clipboard' }).show();
-const notif_saved = () => new Notification({ title: 'Screenshot Uploaded', body: 'Screenshot has been saved to file' }).show();
-const customError = (t) => new Notification({ title: 'Error', body: t }).show();
 
 // Commands
 // Get tmp file path
