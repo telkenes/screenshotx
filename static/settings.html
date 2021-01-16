@@ -1,64 +1,87 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <title>ScreenShotX</title>
-  </head>
+  <!-- CSS -->
   <style>
-  #shortcuts .form-group label {
-  font-size: 16px;
-  display: inline-flex;
-  }
-  #shortcuts .label {
-  display: inline;
-  }
-  #shortcuts .form-group .form-control {
-  width: 320px;
-  display: inline-flex;
-  color: #000000;
-  }
-  .container {
-    visibility: hidden;
-  }
-  #custom_settings {
-    visibility: hidden;
-    display: none;
-    -webkit-animation: fadeIn 1s;
-    animation: fadeIn 1s
-  }
-  #open-con {
-    visibility: hidden;
-    display: none;
-    -webkit-animation: fadeIn 1s;
-    animation: fadeIn 1s;
-  }
-  @-webkit-keyframes fadeIn {
-    from {opacity: 0;}
-    to {opacity: 1;}
-  }
+    #shortcuts .form-group label {
+      font-size: 16px;
+      display: inline-flex;
+    }
 
-  @keyframes fadeIn {
-    from {opacity: 0;}
-    to {opacity:1 ;}
-  }
+    #shortcuts .label {
+      display: inline;
+    }
+
+    #shortcuts .form-group .form-control {
+      width: 320px;
+      display: inline-flex;
+      color: #000000;
+    }
+
+    .container {
+      visibility: hidden;
+    }
+
+    #custom_settings {
+      visibility: hidden;
+      display: none;
+      -webkit-animation: fadeIn 1s;
+      animation: fadeIn 1s
+    }
+
+    #open-con {
+      visibility: hidden;
+      display: none;
+      -webkit-animation: fadeIn 1s;
+      animation: fadeIn 1s;
+    }
+
+    @-webkit-keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
   </style>
-  <body>
-    <div class="container" id="container">
-      <!-- Title -->
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+  <title>ScreenShotX</title>
+</head>
+
+<body>
+  <div class="container" id="container">
+    <!-- Title -->
     <h1>Settings</h1>
     <!-- Navbar -->
     <nav>
       <div class="nav nav-tabs" id="nav-tab" role="tablist">
-        <a class="nav-item nav-link active" id="nav-general-tab" data-toggle="tab" href="#nav-general" role="tab" aria-controls="nav-general" aria-selected="true">General</a>
-        <a class="nav-item nav-link" id="nav-shortcuts-tab" data-toggle="tab" href="#nav-shortcuts" role="tab" aria-controls="nav-shortcuts" aria-selected="false">Shortcuts</a>
+        <a class="nav-item nav-link active" id="nav-general-tab" data-toggle="tab" href="#nav-general" role="tab"
+          aria-controls="nav-general" aria-selected="true">General</a>
+        <a class="nav-item nav-link" id="nav-shortcuts-tab" data-toggle="tab" href="#nav-shortcuts" role="tab"
+          aria-controls="nav-shortcuts" aria-selected="false">Shortcuts</a>
       </div>
     </nav>
+
     <!-- Contents -->
     <div class="tab-content" id="nav-tabContent">
       <!-- Main -->
@@ -69,7 +92,6 @@
             <label for="save-to">Save to</label>
             <select class="form-control" id="save-to">
               <option value="local">Local</option>
-              <option value="imgur">Imgur</option>
               <option value="custom">Custom Image Host</option>
               <option value="clipboard">Clipboard</option>
             </select>
@@ -77,29 +99,20 @@
           <div id="custom_settings">
             <div class="form-group">
               <label for="custom_url" class="label">URL</label>
-              <input class="form-control form-control-sm" id="custom_url" placeholder="https://ate-my-chimichan.ga/upload">
+              <input class="form-control form-control-sm" id="custom_url" placeholder="https://is-a.computer/upload">
             </div>
-
             <div class="form-group">
               <label for="custom_auth" class="label">Authorization</label>
               <input class="form-control form-control-sm" id="custom_key" placeholder="Authorization">
-              <input style="margin-top: 5px;" class="form-control form-control-sm" id="custom_auth" placeholder="abcd1234">
+              <input style="margin-top: 5px;" class="form-control form-control-sm" id="custom_auth" placeholder="KEKW">
             </div>
-
             <div class="form-group">
-              <label for="custom_rurl" class="label">URL Result</label>
+              <label for="custom_rurl" class="label">Response</label>
               <input class="form-control form-control-sm" id="custom_rurl" placeholder="url">
             </div>
           </div>
-          <div id="open-con">
-            <div class="form-group form-check">
-              <input type="checkbox" class="form-check-input" id="open">
-              <label class="form-check-label" for="open">Open url</label>
-            </div>
-          </div>
-      </form>
-    </div>
-
+        </form>
+      </div>
       <!-- Shortcuts -->
       <div class="tab-pane fade" id="nav-shortcuts" role="tabpanel" aria-labelledby="nav-shortcuts-tab">
         <h2>Shortcuts</h2>
@@ -116,19 +129,30 @@
           </div>
           <!-- Window -->
           <div class="form-group">
-            <label for="c_w" class="label">Capture Selection</label>
+            <label for="c_w" class="label">Capture Window</label>
             <input class="form-control form-control-sm" id="c_w" placeholder="Command+9">
+          </div>
+          <!-- Settings -->
+          <div class="form-group">
+            <label for="o_se" class="label">Open Settings</label>
+            <input class="form-control form-control-sm" id="o_se" placeholder="Command+Shift+i">
           </div>
         </form>
       </div>
+      <!-- Updated -->
       <div id="updated"></div>
       <button id="update-btn" type="button" value="update" class="btn btn-primary">Update Settings</button>
+    </div>
+</body>
 
-</div>
-    <script src="jquery.js"></script>
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-    <script src="settings.js"></script>
-  </body>
+<!-- Scripts -->
+<script src="jquery.js"></script>
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+  integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+  integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+  integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+<script src="settings.js"></script>
+
 </html>

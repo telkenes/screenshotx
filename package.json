@@ -12,8 +12,8 @@
   "dependencies": {
     "active-win": "^5.0.0",
     "electron-settings": "^3.2.0",
-    "is-json": "^2.0.1",
-    "request": "^2.88.0",
+    "form-data": "^3.0.0",
+    "node-fetch": "^2.6.1",
     "shelljs": "^0.8.3"
   },
   "devDependencies": {
