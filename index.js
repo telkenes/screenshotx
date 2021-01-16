@@ -1,5 +1,5 @@
 // Dependencies
-const { app, Menu, Tray, BrowserWindow, globalShortcut, clipboard, ipcMain, nativeImage, Notification } = require('electron');
+const { app, Menu, Tray, BrowserWindow, globalShortcut, clipboard, ipcMain, nativeImage } = require('electron');
 const { execSync } = require('child_process');
 const settings = require('electron-settings');
 const activeWin = require('active-win');
@@ -116,7 +116,7 @@ function handleFile() {
     fs.readFile(file, (err, data) => {
       if (err) return customError(err.toString());
       const formData = new FormData();
-      formData.append('file', data, 'image/png');
+      formData.append('file', data, createFileName(new Date()));
 
       let headers = formData.getHeaders();
       headers[conf['custom_settings']['key']] = conf['custom_settings']['auth'];
