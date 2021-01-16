@@ -1,0 +1,23 @@
+{
+  "name": "screenshotx",
+  "version": "1.0.0",
+  "description": "take screenshots and share them online",
+  "main": "index.js",
+  "scripts": {
+    "start": "electron .",
+    "packager": "electron-packager . \"ScreenShotX\" --overwrite --platform=darwin --arch=x64 --icon=assets/icons/icon.icns --prune=true --out=release-builds"
+  },
+  "author": "Telk",
+  "license": "MIT",
+  "dependencies": {
+    "active-win": "^5.0.0",
+    "electron-settings": "^3.2.0",
+    "is-json": "^2.0.1",
+    "request": "^2.88.0",
+    "shelljs": "^0.8.3"
+  },
+  "devDependencies": {
+    "electron": "^7.1.2",
+    "electron-packager": "^14.1.1"
+  }
+}
