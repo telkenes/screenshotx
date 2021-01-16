@@ -5,17 +5,15 @@ const settings = require('electron-settings');
 const activeWin = require('active-win');
 const FormData = require('form-data');
 const fetch = require('node-fetch');
-const shell = require('shelljs');
 const path = require('path');
 const fs = require('fs');
 
 // Functions
 const createFileName = require('./functions/createFileName');
-
-// Set node
-shell.config.execPath = shell.which('node');
+const template = require('./functions/template');
 
 //variables
+let file = `${app.getPath('home')}/screenshot.png`;
 let settingsWin = null;
 let tray = null;
 
@@ -36,12 +34,10 @@ let window_cmd = 'screencapture -l$id ' + temp_img_path;
 function screenshotFullscreen() {
   // Run fullscreen command
   execSync(fullscreen_cmd);
-  handleFile();
 }
 function screenshotSelection() {
   // Run selection command
   execSync(selection_cmd);
-  handleFile();
 }
 async function screenshotWindow() {
   // Get active window
@@ -50,7 +46,6 @@ async function screenshotWindow() {
   if (!active) return customError('No active window found');
   // Otherwise, run he command with the correct ID
   execSync(window_cmd.replace('$id', active.id), { async: true });
-  handleFile();
 }
 
 // Ready
@@ -66,6 +61,10 @@ app.on('ready', (event) => {
     });
     openSettings();
   } else app.dock.hide();
+
+  fs.watch(app.getPath('home'), {}, (e, s) => {
+    if (s === 'screenshot.png' && fs.existsSync(file)) handleFile();
+  });
 
   let conf = settings.get('config');
 
@@ -91,8 +90,6 @@ ipcMain.on('settings:update', async (e, item) => {
   settings.set('config', item);
 });
 
-let file = `${app.getPath('home')}/screenshot.png`;
-
 // Function to watch the file
 function handleFile() {
   let exist = fs.existsSync(file);
@@ -101,7 +98,12 @@ function handleFile() {
   let conf = settings.get('config');
 
   if (conf.save === 'clipboard') {
-    let image = nativeImage.createFromPath(`${app.getPath('home')}/screenshot.png`);
+    let image = nativeImage.createFromPath(file);
+    try {
+      fs.unlinkSync(file);
+    } catch (err) {
+      customError(err.toString());
+    }
     clipboard.writeImage(image);
     notif_clip();
   } else if (conf.save === "local") {
@@ -112,7 +114,7 @@ function handleFile() {
     try {
       fs.renameSync(file, file_path);
     } catch (err) {
-      return customError(err.toString());
+      customError(err.toString());
     }
     notif_saved();
   } else if (conf.save === 'custom') {
@@ -146,6 +148,11 @@ function handleFile() {
           const url = args.reduce((T, A) => (T = (json[A] || {}), T), null);
           clipboard.writeText(url);
           notif_upload();
+          try {
+            fs.unlinkSync(file);
+          } catch (err) {
+            customError(err.toString());
+          }
         } else {
           return customError('Response URL not acceptable');
         }
@@ -191,7 +198,7 @@ function trayMenu(config) {
 
 // Open settings
 async function openSettings() {
-  if (settingsWin) return settingsWin.moveTop();
+  if (settingsWin) return settingsWin.show();
   settingsWin = new BrowserWindow({
     show: false,
     title: "ScreenShotX",
@@ -208,6 +215,7 @@ async function openSettings() {
   settingsWin.webContents.on('dom-ready', () => {
     settingsWin.webContents.send('settings:start', settings.get('config'));
     settingsWin.moveTop();
+    settingsWin.show();
     app.dock.show();
   });
 
@@ -222,81 +230,4 @@ function registerShortcuts(conf) {
   globalShortcut.register(conf.c_s, screenshotSelection);
   globalShortcut.register(conf.c_w, screenshotWindow);
   globalShortcut.register(conf.o_se, openSettings);
-}
-
-//menu
-const template = [
-  {
-    label: 'Edit',
-    submenu: [
-      { role: 'undo' },
-      { role: 'redo' },
-      { type: 'separator' },
-      { role: 'cut' },
-      { role: 'copy' },
-      { role: 'paste' },
-      { role: 'pasteandmatchstyle' },
-      { role: 'delete' },
-      { role: 'selectall' }
-    ]
-  },
-  {
-    label: 'View',
-    submenu: [
-      { role: 'reload' },
-      { role: 'forcereload' },
-      { role: 'toggledevtools' },
-      { type: 'separator' },
-      { role: 'resetzoom' },
-      { role: 'zoomin' },
-      { role: 'zoomout' },
-      { type: 'separator' },
-      { role: 'togglefullscreen' }
-    ]
-  },
-  {
-    role: 'window',
-    submenu: [
-      { role: 'minimize' },
-      { role: 'close' }
-    ]
-  }
-];
-
-if (process.platform === 'darwin') {
-  template.unshift({
-    label: app.name,
-    submenu: [
-      { role: 'about' },
-      { type: 'separator' },
-      { role: 'services' },
-      { type: 'separator' },
-      { role: 'hide' },
-      { role: 'hideothers' },
-      { role: 'unhide' },
-      { type: 'separator' },
-      { role: 'quit' }
-    ]
-  });
-
-  // Edit menu
-  template[1].submenu.push(
-    { type: 'separator' },
-    {
-      label: 'Speech',
-      submenu: [
-        { role: 'startspeaking' },
-        { role: 'stopspeaking' }
-      ]
-    }
-  );
-
-  // Window menu
-  template[3].submenu = [
-    { role: 'close' },
-    { role: 'minimize' },
-    { role: 'zoom' },
-    { type: 'separator' },
-    { role: 'front' }
-  ];
 }
