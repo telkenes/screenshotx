@@ -1,5 +1,6 @@
 // Dependencies
 const { app, Menu, Tray, BrowserWindow, globalShortcut, clipboard, ipcMain, nativeImage, Notification } = require('electron');
+const { execSync } = require('child_process');
 const settings = require('electron-settings');
 const activeWin = require('active-win');
 const FormData = require('form-data');
@@ -34,11 +35,13 @@ let window_cmd = 'screencapture -l$id ' + temp_img_path;
 // Create functions for easy access
 function screenshotFullscreen() {
   // Run fullscreen command
-  shell.exec(fullscreen_cmd, { async: true });
+  execSync(fullscreen_cmd);
+  handleFile();
 }
 function screenshotSelection() {
   // Run selection command
-  shell.exec(selection_cmd, { async: true });
+  execSync(selection_cmd);
+  handleFile();
 }
 async function screenshotWindow() {
   // Get active window
@@ -46,7 +49,8 @@ async function screenshotWindow() {
   // Return if no active window
   if (!active) return customError('No active window found');
   // Otherwise, run he command with the correct ID
-  else shell.exec(window_cmd.replace('$id', active.id), { async: true });
+  execSync(window_cmd.replace('$id', active.id), { async: true });
+  handleFile();
 }
 
 // Ready
@@ -73,7 +77,6 @@ app.on('ready', (event) => {
 
   // Shortcuts
   registerShortcuts(conf);
-  watchFile();
 });
 
 // When window closes
@@ -91,9 +94,9 @@ ipcMain.on('settings:update', async (e, item) => {
 let file = `${app.getPath('home')}/screenshot.png`;
 
 // Function to watch the file
-function watchFile() {
-  if (!fs.existsSync(file)) return setTimeout(() => { watchFile(); }, 1000);
-
+function handleFile() {
+  let exist = fs.existsSync(file);
+  if (!exist) { return customError('The handleFile function was called, but no file exists'); }
   const filename = createFileName(new Date());
   let conf = settings.get('config');
 
@@ -101,18 +104,20 @@ function watchFile() {
     let image = nativeImage.createFromPath(`${app.getPath('home')}/screenshot.png`);
     clipboard.writeImage(image);
     notif_clip();
-  } else fs.readFile(file, (err, data) => {
-    if (err) return customError(err.toString());
-    if (conf.save === "local") {
-      let file_path = `${app.getPath('documents')}/screenshots/` + filename;
-      if (!fs.existsSync(`${app.getPath('documents')}/screenshots`)) {
-        fs.mkdirSync(`${app.getPath('documents')}/screenshots`);
-      }
-      fs.writeFile(file_path, data, (err) => {
-        if (err) console.log(err);
-      });
-      notif_saved();
-    } else if (conf.save === "custom") {
+  } else if (conf.save === "local") {
+    let file_path = `${app.getPath('documents')}/screenshots/` + filename;
+    if (!fs.existsSync(`${app.getPath('documents')}/screenshots`)) {
+      fs.mkdirSync(`${app.getPath('documents')}/screenshots`);
+    }
+    try {
+      fs.renameSync(file, file_path);
+    } catch (err) {
+      return customError(err.toString());
+    }
+    notif_saved();
+  } else if (conf.save === 'custom') {
+    fs.readFile(file, (err, data) => {
+      if (err) return customError(err.toString());
       const formData = new FormData();
       formData.append('file', data, 'image/png');
 
@@ -135,21 +140,20 @@ function watchFile() {
           try {
             json = JSON.parse(text);
           } catch (err) {
-            customError(err.toString());
+            return customError(err.toString());
           }
           const args = rurl.split('.');
           const url = args.reduce((T, A) => (T = (json[A] || {}), T), null);
           clipboard.writeText(url);
           notif_upload();
         } else {
-          customError('Response URL not acceptable');
+          return customError('Response URL not acceptable');
         }
       }).catch(e => {
-        customError(e.toString());
+        return customError(e.toString());
       });
-    } else customError('Save method is not accepted yet.');
-  });
-  setTimeout(() => { fs.unlinkSync(file); watchFile(); }, 1000);
+    });
+  } else customError(`Save method ${conf.save} is not accepted.`);
 }
 
 // Function to create the menu
