@@ -91,9 +91,11 @@
           <div class="form-group">
             <label for="save-to">Save to</label>
             <select class="form-control" id="save-to">
-              <option value="local">Local</option>
-              <option value="custom">Custom Image Host</option>
               <option value="clipboard">Clipboard</option>
+              <option value="custom">Custom Image Host</option>
+              <option value="imgur">Imgur</option>
+              <option value="local">Local</option>
+              <option value="PyroCDN">PyroCDN</option>
             </select>
           </div>
           <div id="custom_settings">
@@ -102,13 +104,23 @@
               <input class="form-control form-control-sm" id="custom_url" placeholder="https://is-a.computer/upload">
             </div>
             <div class="form-group">
-              <label for="custom_auth" class="label">Authorization</label>
-              <input class="form-control form-control-sm" id="custom_key" placeholder="Authorization">
-              <input style="margin-top: 5px;" class="form-control form-control-sm" id="custom_auth" placeholder="KEKW">
+              <label for="custom_auth" class="label">Headers</label>
+              <input style="margin-top: 5px;" class="form-control form-control-sm" id="custom_headers" placeholder="{}">
             </div>
             <div class="form-group">
               <label for="custom_rurl" class="label">Response</label>
               <input class="form-control form-control-sm" id="custom_rurl" placeholder="url">
+            </div>
+          </div>
+          <div id="pyrocdn_settings">
+            <div class="form-group">
+              <label for="custom_auth" class="label">Key</label>
+              <input style="margin-top: 5px;" class="form-control form-control-sm" id="pyrocdn_auth" placeholder="KEKW">
+            </div>
+            <div class="form-group">
+              <label for="custom_auth" class="label">URL</label>
+              <input style="margin-top: 5px;" class="form-control form-control-sm" id="pyrocdn_url"
+                placeholder="https://luke.is-a.bike/upload">
             </div>
           </div>
         </form>

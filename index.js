@@ -5,6 +5,7 @@ const settings = require('electron-settings');
 const activeWin = require('active-win');
 const FormData = require('form-data');
 const fetch = require('node-fetch');
+const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
 
@@ -15,6 +16,7 @@ const template = require('./functions/template');
 
 //variables
 let file = `${app.getPath('home')}/screenshot.png`;
+let lastFile = '';
 let settingsWin = null;
 let tray = null;
 
@@ -89,73 +91,141 @@ ipcMain.on('settings:update', async (e, item) => {
 function handleFile() {
   let exist = fs.existsSync(file);
   if (!exist) { return customError('The handleFile function was called, but no file exists'); }
+  // Check if we already did it
+  const check = fs.statSync(file).size;
+  if (check === lastFile) return;
+  else lastFile = check;
+
   const filename = createFileName(new Date());
   let conf = settings.get('config');
 
   if (conf.save === 'clipboard') {
-    let image = nativeImage.createFromPath(file);
-    try {
-      fs.unlinkSync(file);
-    } catch (err) {
-      customError(err.toString());
-    }
-    clipboard.writeImage(image);
-    notif_clip();
+    saveClipboard();
+  } else if (conf.save === 'imgur') {
+    saveImgur();
   } else if (conf.save === "local") {
-    let file_path = `${app.getPath('documents')}/screenshots/` + filename;
-    if (!fs.existsSync(`${app.getPath('documents')}/screenshots`)) {
-      fs.mkdirSync(`${app.getPath('documents')}/screenshots`);
-    }
-    try {
-      fs.renameSync(file, file_path);
-    } catch (err) {
-      customError(err.toString());
-    }
-    notif_saved();
+    saveLocal();
   } else if (conf.save === 'custom') {
-    fs.readFile(file, (err, data) => {
-      if (err) return customError(err.toString());
-      const formData = new FormData();
-      formData.append('file', data, createFileName(new Date()));
+    saveCustom();
+  } else if (conf.save === 'PyroCDN') {
+    savePyroCDN();
+  } else customError(`Save method ${conf.save} is not accepted.`);
+}
 
-      let headers = formData.getHeaders();
-      headers[conf['custom_settings']['key']] = conf['custom_settings']['auth'];
+function saveCustom() {
+  let conf = settings.get('config');
+  fs.readFile(file, (err, data) => {
+    if (err) return customError(err.toString());
+    const formData = new FormData();
+    formData.append('file', data, createFileName(new Date()));
 
-      fetch(conf['custom_settings']['url'], {
-        method: 'POST',
-        headers: headers,
-        body: formData
-      }).then(async (res) => {
-        const text = await res.text();
-        const rurl = conf['custom_settings']['rurl'].toString();
-        if (rurl === 'response') {
-          clipboard.writeText(text);
-          notif_upload();
-        } else if (rurl.startsWith('json.')) {
-          rurl.replace('json.', '');
-          let json;
-          try {
-            json = JSON.parse(text);
-          } catch (err) {
-            return customError(err.toString());
-          }
-          const args = rurl.split('.');
-          const url = args.reduce((T, A) => (T = (json[A] || {}), T), null);
-          clipboard.writeText(url);
-          notif_upload();
-          try {
-            fs.unlinkSync(file);
-          } catch (err) {
-            customError(err.toString());
-          }
-        } else {
-          return customError('Response URL not acceptable');
+    let headers = Object.assign(conf['custom_settings']['headers'], formData.getHeaders());
+    headers[conf['custom_settings']['key']] = conf['custom_settings']['auth'];
+
+    fetch(conf['custom_settings']['url'], {
+      method: 'POST',
+      headers: headers,
+      body: formData
+    }).then(async (res) => {
+      const text = await res.text();
+      const rurl = conf['custom_settings']['rurl'].toString();
+      if (rurl === 'response') {
+        clipboard.writeText(text);
+        notif_upload();
+      } else if (rurl.startsWith('json.')) {
+        rurl.replace('json.', '');
+        let json;
+        try {
+          json = JSON.parse(text);
+        } catch (err) {
+          return customError(err.toString());
         }
-      }).catch(e => {
+        const args = rurl.split('.');
+        const url = args.reduce((T, A) => (T = (json[A] || {}), T), null);
+        clipboard.writeText(url);
+        notif_upload();
+        try {
+          fs.unlinkSync(file);
+        } catch (err) {
+          customError(err.toString());
+        }
+      } else {
+        return customError('Response URL not acceptable');
+      }
+    }).catch(e => {
+      return customError(e.toString());
+    });
+  });
+}
+function saveClipboard() {
+  let image = nativeImage.createFromPath(file);
+  try {
+    fs.unlinkSync(file);
+  } catch (err) {
+    customError(err.toString());
+  }
+  clipboard.writeImage(image);
+  notif_clip();
+}
+function saveImgur() {
+  fs.readFile(file, (err, data) => {
+    if (err) return customError(err.toString());
+
+    const formData = new FormData();
+    formData.append('image', data, createFileName(new Date()));
+    const headers = formData.getHeaders();
+    headers['Authorization'] = 'Client-ID 6a5400948b3b376';
+    fetch('https://api.imgur.com/3/upload', {
+      method: 'POST',
+      headers: headers,
+      body: formData,
+    }).then(e => e.json())
+      .then(json => {
+        if (json.status === 200) {
+          clipboard.writeText(json.data.link);
+          notif_upload();
+        } else {
+          return customError('An unknown error has occured');
+        }
+      })
+      .catch(e => {
         return customError(e.toString());
       });
+  });
+}
+function saveLocal() {
+  let file_path = `${app.getPath('documents')}/screenshots/` + filename;
+  if (!fs.existsSync(`${app.getPath('documents')}/screenshots`)) {
+    fs.mkdirSync(`${app.getPath('documents')}/screenshots`);
+  }
+  try {
+    fs.renameSync(file, file_path);
+  } catch (err) {
+    customError(err.toString());
+  }
+  notif_saved();
+}
+function savePyroCDN() {
+  let conf = settings.get('config');
+  fs.readFile(file, (err, data) => {
+    if (err) return customError(err.toString());
+
+    const formData = new FormData();
+    formData.append('file', data, createFileName(new Date()));
+    let headers = formData.getHeaders();
+    headers['key'] = conf.pyrocdn.key;
+    fetch(conf['pyrocdn']['url'], {
+      method: 'POST',
+      headers: headers,
+      body: formData
+    }).then(async (res) => {
+      const text = await res.text();
+      clipboard.writeText(text);
+      notif_upload();
+    }).catch(e => {
+      return customError(e.toString());
     });
-  } else customError(`Save method ${conf.save} is not accepted.`);
+  });
 }
 
 // Function to create the menu
